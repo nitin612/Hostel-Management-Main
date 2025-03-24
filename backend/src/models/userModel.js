@@ -23,19 +23,19 @@ const userSchema = mongoose.Schema(
       },
       member_type: {
          type: String,
-         required: [true, "Member type is required!"],
+         // required: [true, "Member type is required!"],
          default: "student",
       },
       mobile_no: {
          type: String,
-         required: [true, "Mobile no is required!"],
+         // required: [true, "Mobile no is required!"], 
       },
       registration_no: {
          type: String,
       },
       gender: {
          type: String,
-         required: [true, "Gender is required!"],
+         // required: [true, "Gender is required!"],
       },
    },
    {

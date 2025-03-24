@@ -2,39 +2,48 @@ import express from "express";
 import dotenv from "dotenv";
 import { connectDb } from "./config/dbConfig.js";
 import { authRouter as authRoutes } from "./routes/authRoutes.js";
+import roomRequestRoutes from "./routes/roomRequestRoutes.js";
 
-dotenv.config(); // Load environment variables
+dotenv.config();
 
-// Debugging: Check if environment variables are loaded
+// Validate Environment Variables
 if (!process.env.PORT) {
     console.warn("⚠️ Warning: PORT is not defined in .env file!");
 }
 if (!process.env.CONNECTION_STRING) {
     console.warn("⚠️ Warning: CONNECTION_STRING is not defined in .env file!");
 }
+if (!process.env.JWT_SECRET) {
+    console.warn("⚠️ Warning: JWT_SECRET is not defined in .env file!");
+}
 
 const app = express();
-
-// Middleware
-app.use(express.json());
+app.use(express.json()); // Parse JSON data
 
 // Connect to Database
 connectDb().catch((err) => {
     console.error("❌ Failed to connect to database:", err);
-    process.exit(1); // Exit process if DB connection fails
+    process.exit(1); // Exit on DB connection failure
 });
 
-// Define Routes
+// Test Route
 app.get("/", (req, res) => {
     console.log("✅ Root endpoint hit");
     res.status(200).json({ message: "You will be successful!" });
 });
 
+// API Routes
 app.use("/api/auth", authRoutes);
+app.use("/api/room-requests", roomRequestRoutes);
+
+// Global Error Handling (Optional)
+app.use((err, req, res, next) => {
+    console.error("Global Error:", err.message);
+    res.status(500).json({ message: "Internal Server Error" });
+});
 
 // Start Server
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {
     console.log(`🚀 Server running on http://localhost:${PORT}`);
 });
-

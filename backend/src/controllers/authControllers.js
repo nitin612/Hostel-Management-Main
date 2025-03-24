@@ -18,7 +18,7 @@ const userRegister = asyncHandler(async (req, res) => {
   } = req.body;
 
   // Validate Required Fields
-  if (!email || !password || !mobile_no) {
+  if (!email || !password ) {
     return res
       .status(400)
       .json({ message: "All required fields must be filled!" });
@@ -83,8 +83,8 @@ const userLogin = asyncHandler(async (req, res) => {
   // Generate JWT Token
   const accessToken = jwt.sign(
     { id: user._id, email: user.email, member_type: user.member_type },
-    process.env.JWT_SECRET,
-    { expiresIn: "1h" }
+    process.env.JWT_SECRET_KEY,
+    { expiresIn: "1d" }
   );
 
   // Send Response
@@ -96,6 +96,7 @@ const userLogin = asyncHandler(async (req, res) => {
       full_name: user.full_name,
       email: user.email,
       mobile_no: user.mobile_no,
+      member_type:user.member_type,
       registration_no: user.registration_no || "-",
     },
   });

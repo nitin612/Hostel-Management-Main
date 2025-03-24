@@ -1,29 +1,20 @@
 import express from "express";
 import { 
-    createRoomRequest, 
-    getPendingRequests, 
-    updateRoomRequest, 
-    getUserRequests,
-    getAllRoomRequests  
+  createRoomRequest, 
+  getPendingRequests, 
+  updateRoomRequest, 
+  getUserRequests, 
+  getAllRoomRequests 
 } from "../controllers/roomRequestControler.js";
+import authMiddleware from "../middleware/authMiddleware.js"; // Import middleware
 
 const router = express.Router();
 
-// User submits room request
-router.post("/", createRoomRequest);
-
-// Admin fetches pending requests
-router.get("/admin", getPendingRequests);
-
-// Admin updates request status
-router.put("/:id", updateRoomRequest);
-
-// ✅ Ensure this route is above `/user/:userId`
-// router.get('/room-requests', getAllRoomRequests);
-router.get("/", getAllRoomRequests);
-
-
-// User fetches their requests
-router.get("/user/:userId", getUserRequests);
+// Protect the routes using the authMiddleware
+router.post("/", authMiddleware, createRoomRequest);
+router.get("/admin", authMiddleware, getPendingRequests);
+router.put("/approval", authMiddleware, updateRoomRequest);
+router.get("/", authMiddleware, getAllRoomRequests);
+router.get("/user/:userId", authMiddleware, getUserRequests);
 
 export default router;

@@ -40,23 +40,25 @@ export const AuthProvider = ({ children }) => {
     setIsLoading(true);
     try {
       const res = await axios.post(`${baseUrl}auth/login`, { email, password });
+      // console.log(res,"fanfkjasn,")
 
-      if (res.data && res.data.accessToken) {
-        await AsyncStorage.setItem("userToken", res.data.accessToken);
+      if (res.data && res.data.token) {
+        await AsyncStorage.setItem("userToken", res.data.token);
         await AsyncStorage.setItem(
           "userInfo",
-          JSON.stringify(res.data.existUser)
+          JSON.stringify(res.data.user)
         );
 
         setUserToken(res.data.accessToken);
-        setUserInfo(res.data.existUser);
-        showAlert("Login successful!"); // ✅ Alert instead of ToastAndroid
+        setUserInfo(res.data.user);
+        showAlert("Login successful!"); 
+        return res.data// ✅ Alert instead of ToastAndroid
       } else {
         showAlert("Invalid login response!");
       }
     } catch (e) {
       setErr(e);
-      console.log("Login Error:", e);
+      console.log("Login Error:123", e);
       showAlert("Login failed. Please check your credentials.");
     } finally {
       setIsLoading(false);

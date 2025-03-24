@@ -22,6 +22,8 @@ import { Formik } from "formik";
 import * as Yup from "yup";
 import axios from "axios";
 import { baseUrl } from "../../config/BaseUrl";
+import AsyncStorage from '@react-native-async-storage/async-storage';
+
 
 const SignUp = ({ navigation }) => {
   const [showMemberType, setShowMemberType] = useState(false);
@@ -50,15 +52,24 @@ const SignUp = ({ navigation }) => {
         registration_no: values.regNo,
         gender: values.gender,
       })
-      .then((res) => {
+      .then(async (res) => {
         console.log(res.data);
-        showToast();
-        navigation.navigate("Login");
+        // Assuming the response contains userId
+        const { user } = res.data;
+        // Store userId in AsyncStorage
+        try {
+          await AsyncStorage.setItem('userId', user.id);
+          showToast("User registered successfully!");
+          navigation.navigate("Login");
+        } catch (error) {
+          console.log('Error storing userId:', error);
+        }
       })
       .catch((e) => {
         console.log(e);
       });
   };
+  
 
   const regNoFormat = /^(\d{4})\/[A-Za-z]{1,2}\/\d{3}$/;
 

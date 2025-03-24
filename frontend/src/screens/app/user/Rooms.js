@@ -25,39 +25,89 @@ import {
   Avatar,
 } from "react-native-paper";
 import DropDown from "react-native-paper-dropdown";
-import { useCallback, useState } from "react";
+import { useCallback, useState,useEffect} from "react";
 import { Formik } from "formik";
 import * as Yup from "yup";
 import { he } from "react-native-paper-dates";
 import { Alert } from "react-native";
+import axios from "axios";
+import AsyncStorage from "@react-native-async-storage/async-storage";
+import { baseUrl } from "../../../config/BaseUrl";
+
 
 const Rooms = ({ navigation }) => {
-  const [refreshing, setRefreshing] = useState(false);
   const [showFaculty, setShowFaculty] = useState(false);
   const [showBatch, setShowBatch] = useState(false);
+  const [userId, setUserId] = useState(null);
 
-  const data = require("../../../data/dummyData.json");
-
-  const onRefresh = useCallback(() => {
-    setRefreshing(true);
-    setTimeout(() => {
-      setRefreshing(false);
-    }, 1500);
+  useEffect(() => {
+    const getUserId = async () => {
+      try {
+        const storedUserId = await AsyncStorage.getItem('userId');
+        if (storedUserId) {
+          setUserId(storedUserId);
+        } else {
+          console.log('No userId found in AsyncStorage');
+          Alert.alert('Error', 'User not authenticated. Please login again.');
+          // You might want to redirect to login screen here
+        }
+      } catch (error) {
+        console.error('Error retrieving userId:', error);
+      }
+    };
+    
+    // getUserId();
   }, []);
 
-  const handleRequestRoom = (values) => {
-    //request room logic
-    console.log(values);
+  const handleRequestRoom = async (values) => {
+
+    try {
+      const token = await AsyncStorage.getItem('userToken'); // Retrieve token
+      // console.log("SDFJSDKJLF: ", token)
+      if (!token) {
+        Alert.alert("Error", "Authentication failed. Please login again.");
+        return;
+      }
+
+  console.log( {
+    faculty: values.faculty,
+    batch: values.batch,
+    members: [values.second_member, values.third_member, values.fourth_member].filter(Boolean),
+    reason: values.reason,
+  },"ssss")
+      const response = await axios.post(
+        `${baseUrl}room-requests`,
+        {
+          faculty: values.faculty,
+          batch: values.batch,
+          members: [values.second_member, values.third_member, values.fourth_member].filter(Boolean),
+          reason: values.reason,
+        },
+        {
+          headers: {
+            Authorization: `Bearer ${token}`, 
+          },
+        }
+      );
+  
+      console.log(response.data.requestDetails,"fahkajs,")
+      Alert.alert("Success", "Room request submitted successfully!");
+    } catch (error) {
+      console.error(error);
+      Alert.alert("Error", error?.response?.data?.message || "Failed to submit room request.");
+    }
   };
+  
 
   const requestRoomSchema = Yup.object({
-    faculty: Yup.string(),
-    batch: Yup.string(),
+    faculty: Yup.string().required("Faculty is required"),
+    batch: Yup.string().required("Batch is required"),
     second_member: Yup.string().email("Enter a valid email!"),
     third_member: Yup.string().email("Enter a valid email!"),
     fourth_member: Yup.string().email("Enter a valid email!"),
-    reason: Yup.string(),
+    reason: Yup.string().required("Reason is required"),
   });
+
 
   return (
     <View style={{ flex: 1, backgroundColor: "#EAECE3", minHeight: "100%" }}>
@@ -242,18 +292,7 @@ const Rooms = ({ navigation }) => {
                         fontFamily: "fontRegular",
                         fontSize: 16,
                       }}
-                      onPress={() => {
-                        Alert.alert(
-                          "Room Request",
-                          "Your room request has been submitted successfully!",
-                          [
-                            {
-                              text: "OK",
-                              onPress: handleSubmit, // Calls your handleSubmit function after closing the alert
-                            },
-                          ]
-                        );
-                      }}
+                      onPress={handleSubmit}
                       disabled={
                         errors.second_member ||
                         errors.third_member ||

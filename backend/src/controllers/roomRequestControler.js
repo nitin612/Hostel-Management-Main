@@ -1,23 +1,37 @@
 import RoomRequest from "../models/roomRequestModel.js";
+import mongoose from "mongoose";
 
-// 🏠 Create a new room request
+//  Create a new room request
 export const createRoomRequest = async (req, res) => {
-    try {
-        const { userId, faculty, batch, members, reason } = req.body;
-        const newRequest = new RoomRequest({ userId, faculty, batch, members, reason, status: "pending" });
-
-        await newRequest.save();
-        res.status(201).json({ message: "Room request submitted successfully!" });
-    } catch (error) {
-        res.status(500).json({ error: "Server error: " + error.message });
+    const { faculty, batch, members, reason } = req.body;
+    const userId = req.user.id; // Extract from token using middleware
+  
+    if (!faculty || !batch || !reason) {
+      return res.status(400).json({ message: "All fields are required." });
     }
-};
-
-// ✅ Admin approves/rejects the request
+  
+    try {
+      const roomRequest = new RoomRequest({
+        userId,
+        faculty,
+        batch,
+        members,
+        reason,
+        status: "pending",
+      });
+  
+      await roomRequest.save();
+      res.status(201).json({ message: "Room request submitted successfully!" ,requestDetails:roomRequest});
+    } catch (error) {
+      res.status(500).json({ message: error.message });
+    }
+  };
+  
+// Admin approves/rejects the request
 export const updateRoomRequest = async (req, res) => {
     try {
-        const { id } = req.params;
-        const { status } = req.body; // "accepted" or "rejected"
+        // const { id } = req.params;
+        const { id,status } = req.body; // "accepted" or "rejected"
 
         const request = await RoomRequest.findById(id);
         if (!request) return res.status(404).json({ message: "Request not found" });
@@ -54,7 +68,7 @@ export const getUserRequests = async (req, res) => {
 
 export const getAllRoomRequests = async (req, res) => {
   try {
-      const requests = await RoomRequest.find();
+    const requests = await RoomRequest.find().populate('userId');
       res.status(200).json(requests);
   } catch (error) {
       res.status(500).json({ message: "Server error" });
