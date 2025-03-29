@@ -4,7 +4,7 @@ import {
   getPendingRequests, 
   updateRoomRequest, 
   getUserRequests, 
-  getAllRoomRequests 
+  getAcceptedRoomRequests
 } from "../controllers/roomRequestControler.js";
 import authMiddleware from "../middleware/authMiddleware.js"; // Import middleware
 
@@ -14,7 +14,7 @@ const router = express.Router();
 router.post("/", authMiddleware, createRoomRequest);
 router.get("/admin", authMiddleware, getPendingRequests);
 router.put("/approval", authMiddleware, updateRoomRequest);
-router.get("/", authMiddleware, getAllRoomRequests);
+router.get("/accepted", authMiddleware, getAcceptedRoomRequests);
 router.get("/user/:userId", authMiddleware, getUserRequests);
 
 export default router;

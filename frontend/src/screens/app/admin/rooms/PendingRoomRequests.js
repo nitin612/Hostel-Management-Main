@@ -12,6 +12,8 @@ import { Avatar, Button, List } from "react-native-paper";
 import { useCallback, useEffect, useState } from "react";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import axios from "axios";
+import { baseUrl } from "../../../../config/BaseUrl";
+import { useFocusEffect } from "@react-navigation/native";
 
 const PendingRoomRequests = ({ navigation }) => {
   const [refreshing, setRefreshing] = useState(false);
@@ -20,23 +22,17 @@ const PendingRoomRequests = ({ navigation }) => {
   const fetchpendingRequests = async (values) => {
     try {
       const token = await AsyncStorage.getItem("userToken"); // Retrieve token
-      console.log("SDFJSDKJLF: ", token);
       if (!token) {
         Alert.alert("Error", "Authentication failed. Please login again.");
         return;
       }
+      const response = await axios.get(`${baseUrl}room-requests/admin`, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
 
-      const response = await axios.get(
-        "http://localhost:3000/api/room-requests/",
-        {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        }
-      );
-
-      console.log(response.data, "requeset penidng data");
-      setData(response.data)
+      setData(response.data);
     } catch (error) {
       console.error(error);
       Alert.alert(
@@ -45,18 +41,17 @@ const PendingRoomRequests = ({ navigation }) => {
       );
     }
   };
-  
 
   const onRefresh = useCallback(() => {
     setRefreshing(true);
-    fetchpendingRequests()
+    fetchpendingRequests();
     setTimeout(() => {
       setRefreshing(false);
     }, 1500);
   }, []);
-useEffect(()=>{
-   fetchpendingRequests()
-},[])
+  useFocusEffect(() => {
+    fetchpendingRequests();
+  });
   return (
     <View style={{ flex: 1, backgroundColor: white, minHeight: "100%" }}>
       <View style={styles.container}>
@@ -72,7 +67,7 @@ useEffect(()=>{
                   <List.Item
                     key={item.id}
                     title={item?.userId?.full_name}
-                    description={item.reason}
+                    description={item?.userId?.registration_no || "123"}
                     left={(color = textDarkGray) => (
                       <View style={styles.imageContainer}>
                         <Avatar.Image

@@ -61,10 +61,10 @@ const ViewRoomAcceptance = ({ navigation, route }) => {
                   }}
                ></View>
                <Text style={styles.infoTextDesc}>Member Details</Text>
-               {room_acceptance.member_details.map((member) => {
+               {room_acceptance.members.map((member) => {
                   return (
                      <View key={member.email} style={styles.memberContainer}>
-                        <Text style={styles.memberDetail}>{member.email}</Text>
+                        <Text style={styles.memberDetail}>{member}</Text>
                         <IconButton
                            icon={"account-search"}
                            iconColor={textDarkGray}

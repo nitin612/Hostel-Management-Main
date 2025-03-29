@@ -25,7 +25,7 @@ import {
   Avatar,
 } from "react-native-paper";
 import DropDown from "react-native-paper-dropdown";
-import { useCallback, useState,useEffect} from "react";
+import { useCallback, useState, useEffect } from "react";
 import { Formik } from "formik";
 import * as Yup from "yup";
 import { he } from "react-native-paper-dates";
@@ -33,7 +33,6 @@ import { Alert } from "react-native";
 import axios from "axios";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { baseUrl } from "../../../config/BaseUrl";
-
 
 const Rooms = ({ navigation }) => {
   const [showFaculty, setShowFaculty] = useState(false);
@@ -43,61 +42,59 @@ const Rooms = ({ navigation }) => {
   useEffect(() => {
     const getUserId = async () => {
       try {
-        const storedUserId = await AsyncStorage.getItem('userId');
+        const storedUserId = await AsyncStorage.getItem("userId");
         if (storedUserId) {
           setUserId(storedUserId);
         } else {
-          console.log('No userId found in AsyncStorage');
-          Alert.alert('Error', 'User not authenticated. Please login again.');
+          console.log("No userId found in AsyncStorage");
+          Alert.alert("Error", "User not authenticated. Please login again.");
           // You might want to redirect to login screen here
         }
       } catch (error) {
-        console.error('Error retrieving userId:', error);
+        console.error("Error retrieving userId:", error);
       }
     };
-    
+
     // getUserId();
   }, []);
 
   const handleRequestRoom = async (values) => {
-
     try {
-      const token = await AsyncStorage.getItem('userToken'); // Retrieve token
-      // console.log("SDFJSDKJLF: ", token)
+      const token = await AsyncStorage.getItem("userToken"); // Retrieve token
+
       if (!token) {
         Alert.alert("Error", "Authentication failed. Please login again.");
         return;
       }
 
-  console.log( {
-    faculty: values.faculty,
-    batch: values.batch,
-    members: [values.second_member, values.third_member, values.fourth_member].filter(Boolean),
-    reason: values.reason,
-  },"ssss")
       const response = await axios.post(
         `${baseUrl}room-requests`,
         {
           faculty: values.faculty,
           batch: values.batch,
-          members: [values.second_member, values.third_member, values.fourth_member].filter(Boolean),
+          members: [
+            values.second_member,
+            values.third_member,
+            values.fourth_member,
+          ].filter(Boolean),
           reason: values.reason,
         },
         {
           headers: {
-            Authorization: `Bearer ${token}`, 
+            Authorization: `Bearer ${token}`,
           },
         }
       );
-  
-      console.log(response.data.requestDetails,"fahkajs,")
       Alert.alert("Success", "Room request submitted successfully!");
+      navigation.pop();
     } catch (error) {
       console.error(error);
-      Alert.alert("Error", error?.response?.data?.message || "Failed to submit room request.");
+      Alert.alert(
+        "Error",
+        error?.response?.data?.message || "Failed to submit room request."
+      );
     }
   };
-  
 
   const requestRoomSchema = Yup.object({
     faculty: Yup.string().required("Faculty is required"),
@@ -107,7 +104,6 @@ const Rooms = ({ navigation }) => {
     fourth_member: Yup.string().email("Enter a valid email!"),
     reason: Yup.string().required("Reason is required"),
   });
-
 
   return (
     <View style={{ flex: 1, backgroundColor: "#EAECE3", minHeight: "100%" }}>

@@ -23,6 +23,7 @@ import {
 } from "react-native-paper";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import axios from "axios";
+import { baseUrl } from "../../../../config/BaseUrl";
 
 const RoomAllocation = ({ navigation, route }) => {
   const { room_request } = route.params;
@@ -32,69 +33,35 @@ const RoomAllocation = ({ navigation, route }) => {
   const [showRoomNumber, setShowRoomNumber] = useState(false);
   const [showDeclineRequest, setShowDeclineRequest] = useState(false);
 
-  const handleRoomAllocation = async () => {
+  const handleRoomAllocation = async (status, values) => {
     try {
-      const token = await AsyncStorage.getItem("userToken"); // Retrieve token
-      if (!token) {
-        Alert.alert("Error", "Authentication failed. Please login again.");
+      if (
+        !values.block ||
+        !values.floor ||
+        !values.roomNumber ||
+        !values.comments
+      ) {
+        Alert.alert("Validation Error", "All fields are required.");
         return;
       }
+      const token = await AsyncStorage.getItem("userToken");
+      if (!token) throw new Error("Authentication failed. Please login again.");
 
       const response = await axios.put(
-        "http://localhost:3000/api/room-requests/approval",
-        {
-          status: "accepted",
-          id: room_request._id,
-        },
-        {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        }
+        `${baseUrl}room-requests/approval`,
+        { status, id: room_request._id, adminResponse: values },
+        { headers: { Authorization: `Bearer ${token}` } }
       );
 
-      console.log(response.data, "fahkajs,");
-      Alert.alert("Success", "Room request has been approved");
+      Alert.alert("Success", `Room request has been ${status}`);
+      navigation.pop();
     } catch (error) {
       console.error(error);
       Alert.alert(
         "Error",
-        error?.response?.data?.message || "Failed to submit room request."
+        error?.response?.data?.message || `Failed to ${status} room request.`
       );
     }
-    //room allocation logic
-  };
-  const DeclineRequest = async () => {
-    try {
-      const token = await AsyncStorage.getItem("userToken"); // Retrieve token
-      if (!token) {
-        Alert.alert("Error", "Authentication failed. Please login again.");
-        return;
-      }
-
-      const response = await axios.put(
-        "http://localhost:3000/api/room-requests/approval",
-        {
-          status: "rejected",
-          id: room_request._id,
-        },
-        {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        }
-      );
-
-      console.log(response.data, "fahkajs,");
-      Alert.alert("Success", "Room request has been rejected");
-    } catch (error) {
-      console.error(error);
-      Alert.alert(
-        "Error",
-        error?.response?.data?.message || "Failed to submit room request."
-      );
-    }
-    //room allocation logic
   };
 
   const showDeclineModal = () => {
@@ -102,6 +69,28 @@ const RoomAllocation = ({ navigation, route }) => {
   };
 
   const hideDeclineModal = () => {
+    (async () => {
+      try {
+        const token = await AsyncStorage.getItem("userToken");
+        if (!token)
+          throw new Error("Authentication failed. Please login again.");
+
+        const response = await axios.put(
+          `${baseUrl}room-requests/approval`,
+          { status: "rejected", id: room_request._id, adminResponse: values },
+          { headers: { Authorization: `Bearer ${token}` } }
+        );
+
+        Alert.alert("Success", `Room request has been Rejected`);
+        navigation.pop();
+      } catch (error) {
+        console.error(error);
+        Alert.alert(
+          "Error",
+          error?.response?.data?.message || `Failed to rejected room request.`
+        );
+      }
+    })();
     setShowDeclineRequest(false);
   };
 
@@ -124,7 +113,7 @@ const RoomAllocation = ({ navigation, route }) => {
           <Text style={styles.infoTextContainer}>
             <Text style={styles.infoTextDesc}>Date Requested: </Text>
             <Text style={styles.infoTextValue}>
-              {room_request.date_requested}
+              {room_request.createdAt.split("T")[0]}
             </Text>
           </Text>
           <Text style={styles.infoTextContainer}>
@@ -185,7 +174,7 @@ const RoomAllocation = ({ navigation, route }) => {
               roomNumber: "",
               comments: "",
             }}
-            onSubmit={handleRoomAllocation}
+            onSubmit={(values) => handleRoomAllocation("accepted", values)}
             validationSchema={roomAllocationSchema}
           >
             {({ handleBlur, handleChange, handleSubmit, values }) => {
@@ -366,10 +355,7 @@ const RoomAllocation = ({ navigation, route }) => {
                             fontFamily: "fontRegular",
                             fontSize: 16,
                           }}
-                          onPress={() => {
-                            hideDeclineModal;
-                         DeclineRequest()
-                          }}
+                          onPress={hideDeclineModal}
                         >
                           Yes
                         </Button>
