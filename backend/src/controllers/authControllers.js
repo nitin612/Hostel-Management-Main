@@ -84,7 +84,7 @@ const userLogin = asyncHandler(async (req, res) => {
   const accessToken = jwt.sign(
     { id: user._id, email: user.email, member_type: user.member_type },
     process.env.JWT_SECRET_KEY,
-    { expiresIn: "1d" }
+    { expiresIn: "15d" }
   );
 
   // Send Response

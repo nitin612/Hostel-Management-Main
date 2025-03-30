@@ -3,7 +3,7 @@ import dotenv from "dotenv";
 import { connectDb } from "./config/dbConfig.js";
 import { authRouter as authRoutes } from "./routes/authRoutes.js";
 import roomRequestRoutes from "./routes/roomRequestRoutes.js";
-
+import announcementRoute from "./routes/announcementRoutes.js";
 dotenv.config();
 
 // Validate Environment Variables
@@ -35,6 +35,7 @@ app.get("/", (req, res) => {
 // API Routes
 app.use("/api/auth", authRoutes);
 app.use("/api/room-requests", roomRequestRoutes);
+app.use("/api/announcement", announcementRoute);
 
 // Global Error Handling (Optional)
 app.use((err, req, res, next) => {

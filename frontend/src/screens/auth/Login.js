@@ -53,7 +53,7 @@ const Login = ({ navigation }) => {
         showToast(); // Show success message
         navigation.navigate("Home"); // Navigate after login
       } else {
-        console.error("Invalid response data:", response);
+        // console.error("Invalid response data:", response);
       }
     } catch (error) {
       console.log("Error during login:", error.response?.data || error);
@@ -62,7 +62,6 @@ const Login = ({ navigation }) => {
   
 
   const handleMicrosoftLogin = () => {
-    // microsoft login
   };
 
   const loginSchema = Yup.object({
