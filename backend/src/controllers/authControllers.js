@@ -64,7 +64,7 @@ const userRegister = asyncHandler(async (req, res) => {
   }
 });
 
-// ✅ User Login
+
 const userLogin = asyncHandler(async (req, res) => {
   const { email, password } = req.body;
 
@@ -84,7 +84,7 @@ const userLogin = asyncHandler(async (req, res) => {
   const accessToken = jwt.sign(
     { id: user._id, email: user.email, member_type: user.member_type },
     process.env.JWT_SECRET_KEY,
-    { expiresIn: "15d" }
+    { expiresIn: "1y" }
   );
 
   // Send Response
