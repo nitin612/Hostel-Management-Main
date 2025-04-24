@@ -12,32 +12,33 @@ import { useState } from "react";
 const RoomDetails = ({ navigation, route }) => {
   const [roomDetails, setRoomDetails] = useState(route?.params.item);
   return (
-    <ScrollView
-      style={{ flex: 1 }}
-      contentContainerStyle={{ backgroundColor: white, minHeight: "100%" }}
-      showsVerticalScrollIndicator={false}
-    >
-      <View style={styles.container}>
-        <View style={styles.contentContainer}>
-          <Text>Room Details: {roomDetails?.userId?.full_name}</Text>
-          <Text>created Date: {roomDetails?.createdAt.split("T")[0]}</Text>
-
-          <Text>User Name: {roomDetails?.userId?.full_name}</Text>
-          <Text>Depatrment: {roomDetails?.faculty}</Text>
-          <Text>BLOCK: {roomDetails?.adminResponse?.block}</Text>
-          <Text>Floor: {roomDetails?.adminResponse?.floor}</Text>
-          <Text>COMMENT: {roomDetails?.adminResponse?.comments}</Text>
-          <Text>ASSIGNED TO: {roomDetails?.adminResponse?.roomNumber}</Text>
-          <Text>Room Members Details</Text>
-          <FlatList
-            data={roomDetails?.members}
-            renderItem={(item, index) => <View>
-                <Text>{item.item}</Text>
-            </View>}
-          />
-        </View>
+    <FlatList
+  data={roomDetails?.members}
+  keyExtractor={(item, index) => index.toString()}
+  ListHeaderComponent={
+    <View style={styles.container}>
+      <View style={styles.contentContainer}>
+        <Text>Room Details: {roomDetails?.userId?.full_name}</Text>
+        <Text>Created Date: {roomDetails?.createdAt?.split("T")[0]}</Text>
+        <Text>User Name: {roomDetails?.userId?.full_name}</Text>
+        <Text>Department: {roomDetails?.faculty}</Text>
+        <Text>BLOCK: {roomDetails?.adminResponse?.block}</Text>
+        <Text>Floor: {roomDetails?.adminResponse?.floor}</Text>
+        <Text>COMMENT: {roomDetails?.adminResponse?.comments}</Text>
+        <Text>ASSIGNED TO: {roomDetails?.adminResponse?.roomNumber}</Text>
+        <Text>Room Members Details</Text>
       </View>
-    </ScrollView>
+    </View>
+  }
+  renderItem={({ item }) => (
+    <View style={{ paddingHorizontal: 16, paddingVertical: 8 }}>
+      <Text>{item}</Text>
+    </View>
+  )}
+  contentContainerStyle={{ backgroundColor: white, paddingBottom: 20 }}
+  showsVerticalScrollIndicator={false}
+/>
+
   );
 };
 

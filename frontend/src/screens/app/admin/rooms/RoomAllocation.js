@@ -77,7 +77,7 @@ const RoomAllocation = ({ navigation, route }) => {
 
         const response = await axios.put(
           `${baseUrl}room-requests/approval`,
-          { status: "rejected", id: room_request._id, adminResponse: values },
+          { status: "rejected", id: room_request._id },
           { headers: { Authorization: `Bearer ${token}` } }
         );
 

@@ -141,7 +141,7 @@ const Rooms = ({ navigation }) => {
                      </View>
                   </TouchableRipple>
 
-                  <TouchableRipple
+                  {/* <TouchableRipple
                      onPress={() => navigation.navigate("AdminVacateRoom")}
                      style={styles.roomManagementCard}
                   >
@@ -158,10 +158,10 @@ const Rooms = ({ navigation }) => {
                         />
                         <Text style={styles.cardText}>Vacate Room</Text>
                      </View>
-                  </TouchableRipple>
+                  </TouchableRipple> */}
                </View>
 
-               <View style={styles.quickButtons}>
+               {/* <View style={styles.quickButtons}>
                   <TouchableRipple
                      onPress={() => navigation.navigate("AdminRoomDetails")}
                      style={styles.roomManagementCard}
@@ -180,7 +180,7 @@ const Rooms = ({ navigation }) => {
                         <Text style={styles.cardText}>View Room Details</Text>
                      </View>
                   </TouchableRipple>
-               </View>
+               </View> */}
             </View>
          </View>
       </ScrollView>

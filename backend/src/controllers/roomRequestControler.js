@@ -36,7 +36,7 @@ export const updateRoomRequest = async (req, res) => {
     if (!request) return res.status(404).json({ message: 'Request not found' });
 
     request.status = status;
-    if (adminResponse) request.adminResponse = adminResponse;
+    if (status !="decline" && adminResponse) request.adminResponse = adminResponse;
     await request.save();
 
     res.status(200).json({ message: `Request ${status.toLowerCase()} successfully!`, request });
@@ -63,6 +63,14 @@ export const updateRoomDetails = async (req, res) => {
 export const getPendingRequests = async (req, res) => {
     try {
         const pendingRequests = await RoomRequest.find({ status: "pending" }).populate('userId');
+        res.status(200).json(pendingRequests);
+    } catch (error) {
+        res.status(500).json({ error: "Server error: " + error.message });
+    }
+};
+export const getAllRequest = async (req, res) => {
+    try {
+        const pendingRequests = await RoomRequest.find({  }).populate('userId');
         res.status(200).json(pendingRequests);
     } catch (error) {
         res.status(500).json({ error: "Server error: " + error.message });

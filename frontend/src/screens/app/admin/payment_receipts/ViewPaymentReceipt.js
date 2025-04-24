@@ -25,18 +25,18 @@ const ViewPaymentReceipt = ({ navigation, route }) => {
             <View style={styles.contentContainer}>
                <View style={styles.detailContainer}>
                   <Text style={styles.detailTitle}>Full Name</Text>
-                  <Text style={styles.detailValue}>{payment_receipt.name}</Text>
+                  <Text style={styles.detailValue}>{payment_receipt?.userId?.full_name}</Text>
                </View>
                <View style={styles.detailContainer}>
                   <Text style={styles.detailTitle}>Registration Number</Text>
                   <Text style={styles.detailValue}>
-                     {payment_receipt.registration_number}
+                     {payment_receipt?.userId?.registration_no}
                   </Text>
                </View>
                <View style={styles.detailContainer}>
-                  <Text style={styles.detailTitle}>Reason</Text>
+                  <Text style={styles.detailTitle}>Fee</Text>
                   <Text style={styles.detailValue}>
-                     {payment_receipt.reason}
+                     {payment_receipt.description}
                   </Text>
                </View>
                <Button
@@ -83,18 +83,20 @@ const styles = StyleSheet.create({
    detailContainer: {
       width: "100%",
       marginVertical: 5,
+      gap:10
    },
    detailTitle: {
       fontFamily: "fontBold",
-      fontSize: 16,
+      fontSize: 18,
    },
    detailValue: {
-      fontFamily: "fontRegular",
+      fontFamily: "fontBold",
       fontSize: 14,
       paddingHorizontal: 10,
       marginBottom: 5,
       borderBottomColor: primaryBlue,
       borderBottomWidth: 1,
+
    },
    actionButton: {
       width: "100%",

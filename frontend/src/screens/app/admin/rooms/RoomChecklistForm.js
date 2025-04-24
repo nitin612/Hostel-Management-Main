@@ -46,7 +46,7 @@ const RoomChecklistForm = ({ navigation, route }) => {
                <Text style={styles.infoTextContainer}>
                   <Text style={styles.infoTextDesc}>Batch: </Text>
                   <Text style={styles.infoTextValue}>
-                     {checklist_form.faculty} | {checklist_form.batch}
+                     {checklist_form.faculty} | {checklist_form.batch} | {checklist_form.userId.batch}
                   </Text>
                </Text>
                <View
@@ -57,10 +57,10 @@ const RoomChecklistForm = ({ navigation, route }) => {
                   }}
                ></View>
                <Text style={styles.infoTextDesc}>Member Details</Text>
-               {checklist_form.member_details.map((member) => {
+               {checklist_form.members.map((member) => {
                   return (
                      <View key={member.email} style={styles.memberContainer}>
-                        <Text style={styles.memberDetail}>{member.email}</Text>
+                        <Text style={styles.memberDetail}>{member}</Text>
                         <IconButton
                            icon={"account-search"}
                            iconColor={textDarkGray}
@@ -150,69 +150,89 @@ const RoomChecklistForm = ({ navigation, route }) => {
                            Qt
                         </DataTable.Title>
                      </DataTable.Header>
-                     {checklist_form.room_furniture_details.map((furniture) => {
-                        return (
-                           <DataTable.Row
-                              key={furniture.id}
-                              style={{
-                                 borderTopColor: textLightGray,
-                                 borderTopWidth: 1,
-                              }}
-                           >
-                              <DataTable.Cell
-                                 style={{
-                                    flex: 1,
-                                    borderRightColor: textLightGray,
-                                    borderRightWidth: 1,
-                                 }}
-                                 textStyle={{
-                                    fontFamily: "fontRegular",
-                                    fontSize: 16,
-                                 }}
-                              >
-                                 {furniture.id}
-                              </DataTable.Cell>
-                              <DataTable.Cell
-                                 style={{
-                                    flex: 4,
-                                    borderRightColor: textLightGray,
-                                    borderRightWidth: 1,
-                                 }}
-                                 textStyle={{
-                                    fontFamily: "fontRegular",
-                                    fontSize: 16,
-                                    paddingLeft: 10,
-                                 }}
-                              >
-                                 {furniture.item}
-                              </DataTable.Cell>
-                              <DataTable.Cell
-                                 style={{
-                                    flex: 2,
-                                    borderRightColor: textLightGray,
-                                    borderRightWidth: 1,
-                                 }}
-                                 textStyle={{
-                                    fontFamily: "fontRegular",
-                                    fontSize: 16,
-                                    paddingLeft: 10,
-                                 }}
-                              >
-                                 {furniture.condition}
-                              </DataTable.Cell>
-                              <DataTable.Cell
-                                 style={{ flex: 1 }}
-                                 textStyle={{
-                                    fontFamily: "fontRegular",
-                                    fontSize: 16,
-                                    paddingLeft: 10,
-                                 }}
-                              >
-                                 {furniture.quantity}
-                              </DataTable.Cell>
-                           </DataTable.Row>
-                        );
-                     })}
+                     {
+  checklist_form.furnitureDetails &&
+  Object.keys(checklist_form.furnitureDetails)
+    .filter(key => key.endsWith("_condition"))
+    .map((conditionKey, index) => {
+      const itemKey = conditionKey.replace("_condition", "");
+      let condition = checklist_form.furnitureDetails[conditionKey];
+      let quantity = checklist_form.furnitureDetails[`${itemKey}_quantity`];
+
+      // Replace empty values with "N/A"
+      condition = condition && condition.trim() !== "" ? condition : "N/A";
+      quantity = quantity && quantity.trim() !== "" ? quantity : "N/A";
+
+      // Format the item name nicely
+      const itemName = itemKey
+        .replace(/_/g, " ")
+        .replace(/\b\w/g, l => l.toUpperCase());
+
+      return (
+        <DataTable.Row
+          key={itemKey}
+          style={{
+            borderTopColor: textLightGray,
+            borderTopWidth: 1,
+          }}
+        >
+          <DataTable.Cell
+            style={{
+              flex: 1,
+              borderRightColor: textLightGray,
+              borderRightWidth: 1,
+            }}
+            textStyle={{
+              fontFamily: "fontRegular",
+              fontSize: 16,
+            }}
+          >
+            {index + 1}
+          </DataTable.Cell>
+          <DataTable.Cell
+            style={{
+              flex: 4,
+              borderRightColor: textLightGray,
+              borderRightWidth: 1,
+            }}
+            textStyle={{
+              fontFamily: "fontRegular",
+              fontSize: 16,
+              paddingLeft: 10,
+            }}
+          >
+            {itemName}
+          </DataTable.Cell>
+          <DataTable.Cell
+            style={{
+              flex: 2,
+              borderRightColor: textLightGray,
+              borderRightWidth: 1,
+            }}
+            textStyle={{
+              fontFamily: "fontRegular",
+              fontSize: 16,
+              paddingLeft: 10,
+            }}
+          >
+            {condition}
+          </DataTable.Cell>
+          <DataTable.Cell
+            style={{ flex: 1 }}
+            textStyle={{
+              fontFamily: "fontRegular",
+              fontSize: 16,
+              paddingLeft: 10,
+            }}
+          >
+            {quantity}
+          </DataTable.Cell>
+        </DataTable.Row>
+      );
+    })
+}
+
+ 
                   </DataTable>
                </View>
                <View
@@ -231,10 +251,10 @@ const RoomChecklistForm = ({ navigation, route }) => {
                      marginVertical: 8,
                   }}
                >
-                  {checklist_form.item_condition_details}
+                  {checklist_form.furnitureDetails.comments}
                </Text>
                <View style={styles.actionButtonContainer}>
-                  <Button
+                  {/* <Button
                      mode="outlined"
                      style={{
                         width: "48%",
@@ -259,9 +279,9 @@ const RoomChecklistForm = ({ navigation, route }) => {
                         fontSize: 16,
                      }}
                      // onPress={handleSubmit}
-                  >
-                     Accept
-                  </Button>
+                  > */}
+                     {/* Accept */}
+                  {/* </Button> */}
                </View>
             </View>
          </View>

@@ -1,4 +1,4 @@
-import { View, Text, StyleSheet } from "react-native";
+import { View, Text, StyleSheet ,Alert} from "react-native";
 import { ScrollView } from "react-native-gesture-handler";
 import { SafeAreaView } from "react-native-safe-area-context";
 import {
@@ -12,6 +12,9 @@ import {
 import { Button, TextInput, TouchableRipple } from "react-native-paper";
 import { Formik } from "formik";
 import * as Yup from "yup";
+import axios from "axios";
+import { baseUrl } from "../../../../config/BaseUrl";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 // import { green } from "react-native-reanimated/lib/typescript/Colors";
 
 const AddPaymentReceipt = ({ navigation }) => {
@@ -21,9 +24,29 @@ const AddPaymentReceipt = ({ navigation }) => {
       image: Yup.string(),
    });
 
-   const handleAddPaymentReceipt = (values) => {
-      //handle add announcement
-      console.log(values);
+   const handleAddPaymentReceipt = async (values) => {
+      try {
+         const token = await AsyncStorage.getItem("userToken"); // Retrieve token
+         console.log(token,'kjrjtwngfdv')
+         if (!token) {
+           Alert.alert("Error", "Authentication failed. Please login again.");
+           return;
+         }
+         const response = await axios.post(`${baseUrl}receipts/`,values, {
+           headers: {
+             Authorization: `Bearer ${token}`,
+           },
+         });
+         if(response){
+            Alert.alert("Success", "Receipt submitted successfully!");
+         }
+       } catch (error) {
+         console.error(error);
+         Alert.alert(
+           "Error",
+           error?.response?.data?.message || "Failed to submit Receipt ."
+         );
+       }
    };
 
    const handleUploadImage = () => {

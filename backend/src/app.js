@@ -5,6 +5,7 @@ import { authRouter as authRoutes } from "./routes/authRoutes.js";
 import roomRequestRoutes from "./routes/roomRequestRoutes.js";
 import announcementRoute from "./routes/announcementRoutes.js";
 import complaintRoute from "./routes/complainRoutes.js";
+import paymentReceiptRoutes from "./routes/paymentReceiptRoutes.js"
 dotenv.config();
 
 // Validate Environment Variables
@@ -38,6 +39,7 @@ app.use("/api/auth", authRoutes);
 app.use("/api/room-requests", roomRequestRoutes);
 app.use("/api/announcement", announcementRoute);
 app.use("/api/complains",complaintRoute);
+app.use("/api/receipts",paymentReceiptRoutes);
 
 // Global Error Handling (Optional)
 app.use((err, req, res, next) => {

@@ -1,6 +1,6 @@
 import { ScrollView } from "react-native-gesture-handler";
-import { Platform, Alert, ToastAndroid } from "react-native";
-import { useState } from "react";
+import { Platform, Alert, ToastAndroid, TouchableOpacity } from "react-native";
+import { useEffect, useState } from "react";
 import { View, Text, Image, StyleSheet } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { Button, TextInput } from "react-native-paper";
@@ -29,6 +29,21 @@ const SignUp = ({ navigation }) => {
   const [showMemberType, setShowMemberType] = useState(false);
   const [showGender, setShowGender] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
+  const [clickCount, setClickCount] = useState(0);
+const [isAdmin, setIsAdmin] = useState(false);
+
+const handlePress = () => {
+  const newCount = clickCount + 1;
+  setClickCount(newCount);
+
+  if (newCount % 4 === 0) {
+    Alert.alert("Admin Mode");
+    setIsAdmin(true);
+  } else {
+    setIsAdmin(false);
+  }
+};
+
 
   // const showToast = () => {
   //    ToastAndroid.show("User registered successfully!", ToastAndroid.SHORT);
@@ -47,7 +62,7 @@ const SignUp = ({ navigation }) => {
         email: values.email,
         full_name: values.name,
         password: values.password,
-        member_type: values.memberType,
+        member_type: isAdmin?"admin":values.memberType,
         mobile_no: values.mobileNo,
         registration_no: values.regNo,
         gender: values.gender,
@@ -86,6 +101,10 @@ const SignUp = ({ navigation }) => {
     gender: Yup.string().required("Gender is required!"),
     password: Yup.string().required("Password is required!"),
   });
+  useEffect(()=>{
+setClickCount(0)
+setIsAdmin(false)
+  },[navigation])
 
   return (
     <SafeAreaView style={styles.mainContainer}>
@@ -98,9 +117,9 @@ const SignUp = ({ navigation }) => {
         showsVerticalScrollIndicator={false}
       >
         <View style={styles.contentContainer}>
-          <View style={styles.imageContainer}>
+          <TouchableOpacity style={styles.imageContainer} activeOpacity={1} onPress={handlePress}>
             <Image source={logo} resizeMode="contain" style={styles.image} />
-          </View>
+          </TouchableOpacity>
           <Text style={styles.title}>Sign Up</Text>
           <Text style={styles.text}>
             Welcome to AGC - Hostel Management Application
@@ -188,7 +207,7 @@ const SignUp = ({ navigation }) => {
                           { label: "Student", value: "student" },
                           {
                             label: "Academic Staff",
-                            value: "admin",
+                            value: "academicStaff",
                           },
                         ]}
                         value={values.memberType}

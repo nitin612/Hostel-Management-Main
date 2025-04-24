@@ -20,7 +20,6 @@ import RoomDetails from "./RoomDetails";
 const AcceptedRoomRequests = ({ navigation }) => {
    const [refreshing, setRefreshing] = useState(false);
 
-   // const data = require("../../../../data/dummyData.json");
 
    const [data, setData] = useState([]);
  

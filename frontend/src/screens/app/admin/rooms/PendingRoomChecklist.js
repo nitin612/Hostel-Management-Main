@@ -1,4 +1,4 @@
-import { View, Text, RefreshControl, FlatList, StyleSheet } from "react-native";
+import { View, Text, RefreshControl, FlatList, StyleSheet, Alert } from "react-native";
 import { ScrollView } from "react-native-gesture-handler";
 import { SafeAreaView } from "react-native-safe-area-context";
 import {
@@ -10,18 +10,49 @@ import {
 } from "../../../../constants/Colors";
 import { Avatar, Button, List } from "react-native-paper";
 import { useCallback, useState } from "react";
+import AsyncStorage from "@react-native-async-storage/async-storage";
+import axios from "axios";
+import { baseUrl } from "../../../../config/BaseUrl";
+import { useFocusEffect } from "@react-navigation/native";
 
 const PendingRoomChecklist = ({ navigation }) => {
    const [refreshing, setRefreshing] = useState(false);
 
-   const data = require("../../../../data/dummyData.json");
+   const [data, setData] = useState([]);
+ 
+   const fetchAppectedRequest = async (values) => {
+     try {
+       const token = await AsyncStorage.getItem("userToken"); // Retrieve token
+       if (!token) {
+         Alert.alert("Error", "Authentication failed. Please login again.");
+         return;
+       }
+       const response = await axios.get(`${baseUrl}room-requests/accepted`, {
+         headers: {
+           Authorization: `Bearer ${token}`,
+         },
+       });
+       setData(response.data);
+     } catch (error) {
+       console.error(error);
+       Alert.alert(
+         "Error",
+         error?.response?.data?.message || "Failed to submit room request."
+       );
+     }
+   };
 
-   const onRefresh = useCallback(() => {
-      setRefreshing(true);
-      setTimeout(() => {
-         setRefreshing(false);
-      }, 1500);
-   }, []);
+    const onRefresh = useCallback(() => {
+        setRefreshing(true);
+        fetchAppectedRequest();
+        setTimeout(() => {
+          setRefreshing(false);
+        }, 1500);
+      }, []);
+      useFocusEffect(() => {
+        fetchAppectedRequest();
+      });
+
 
    return (
       <View style={{ flex: 1, backgroundColor: white, minHeight: "100%" }}>
@@ -29,7 +60,7 @@ const PendingRoomChecklist = ({ navigation }) => {
             <View style={styles.contentContainer}>
                <View style={styles.listContainer}>
                   <FlatList
-                     data={data.pending_room_checklists}
+                     data={data}
                      refreshControl={
                         <RefreshControl
                            refreshing={refreshing}
@@ -39,9 +70,9 @@ const PendingRoomChecklist = ({ navigation }) => {
                      renderItem={({ item }) => {
                         return (
                            <List.Item
-                              key={item.id}
-                              title={item.name}
-                              description={item.faculty}
+                              key={item._id}
+                              title={item.userId.full_name}
+                              description={item.userId.email}
                               left={(color = textDarkGray) => (
                                  <View style={styles.imageContainer}>
                                     <Avatar.Image
