@@ -16,6 +16,7 @@ const roomRequestSchema = new mongoose.Schema(
       enum: ["pending", "accepted", "rejected"],
       default: "pending",
     },
+    furnitureDetails:{},
     adminResponse: { type: {} },
   },
   { timestamps: true }

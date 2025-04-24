@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { View, Text, StyleSheet } from "react-native";
+import { View, Text, StyleSheet, Alert } from "react-native";
 import { ScrollView } from "react-native-gesture-handler";
 import { Formik } from "formik";
 import * as Yup from "yup";
@@ -14,6 +14,9 @@ import {
 import { Button, IconButton, TextInput } from "react-native-paper";
 import WarningModal from "../../../../components/WarningModal";
 import ItemConditionDetails from "../../../../components/ItemConditionDetails";
+import AsyncStorage from "@react-native-async-storage/async-storage";
+import axios from "axios";
+import { baseUrl } from "../../../../config/BaseUrl";
 
 const RoomChecklistDetails = ({ navigation, route }) => {
   const [visible, setVisible] = useState(false);
@@ -42,9 +45,26 @@ const RoomChecklistDetails = ({ navigation, route }) => {
 
   const [showDeclineRequest, setShowDeclineRequest] = useState(false);
 
-  const handleRoomChecklistFormSubmission = (values, errors) => {
-    //handle checklist form submission
-    console.log(values);
+  const handleRoomChecklistFormSubmission = async(values,error) => {
+     try {
+          const token = await AsyncStorage.getItem("userToken");
+          if (!token) throw new Error("Authentication failed. Please login again.");
+    
+          const response = await axios.put(
+            `${baseUrl}room-requests/update`,
+            {  id: room_acceptance._id, furnitureDetails: values },
+            { headers: { Authorization: `Bearer ${token}` } }
+          );
+    
+          Alert.alert("Success", `Room request has been updated successfully!  `);
+          navigation.pop();
+        } catch (error) {
+          console.error(error);
+          Alert.alert(
+            "Error",
+            error?.response?.data?.message || `Failed to details room request.`
+          );
+        }
   };
 
   const showDeleteRequestModal = () => {
@@ -121,7 +141,6 @@ const RoomChecklistDetails = ({ navigation, route }) => {
     window_door_key_quantity: Yup.string().required("Quantity is required!"),
     mattress_condition: Yup.string().required("Condition is required!"),
     mattress_quantity: Yup.string().required("Quantity is required!"),
-
     comments: Yup.string(),
   });
 
@@ -237,12 +256,10 @@ const RoomChecklistDetails = ({ navigation, route }) => {
                 window_door_key_quantity: "",
                 mattress_condition: "",
                 mattress_quantity: "",
-
                 comments: "",
               }}
-              validationSchema={roomChecklistFormSchema}
-              onSubmit={(values, errors) =>
-                handleRoomChecklistFormSubmission(values, errors)
+              onSubmit={(values) =>
+                handleRoomChecklistFormSubmission(values)
               }
             >
               {({
@@ -456,7 +473,9 @@ const RoomChecklistDetails = ({ navigation, route }) => {
                           fontSize: 16,
                           color: white,
                         }}
-                        onPress={handleSubmit}
+                        onPress={() => {
+                          handleSubmit()
+                        }}
                       >
                         Submit
                       </Button>

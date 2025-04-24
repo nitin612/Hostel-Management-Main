@@ -1,4 +1,4 @@
-import { View, Text, StyleSheet } from "react-native";
+import { View, Text, StyleSheet, Alert } from "react-native";
 import { ScrollView } from "react-native-gesture-handler";
 import { SafeAreaView } from "react-native-safe-area-context";
 import {
@@ -12,6 +12,9 @@ import {
 import { Button, TextInput, TouchableRipple } from "react-native-paper";
 import { Formik } from "formik";
 import * as Yup from "yup";
+import AsyncStorage from "@react-native-async-storage/async-storage";
+import { baseUrl } from "../../../../config/BaseUrl";
+import axios from "axios";
 
 const AddNewComplain = ({ navigation }) => {
    const addNewComplainSchema = Yup.object({
@@ -19,10 +22,31 @@ const AddNewComplain = ({ navigation }) => {
       description: Yup.string().required("Amount is required!"),
       image: Yup.string(),
    });
+  
 
-   const handleAddNewComplain = (values) => {
-      //handle add complain
-      console.log(values);
+   const handleAddNewComplain = async(values) => {
+      try {
+         const token = await AsyncStorage.getItem("userToken"); // Retrieve token
+         if (!token) {
+           Alert.alert("Error", "Authentication failed. Please login again.");
+           return;
+         }
+         const response = await axios.post(`${baseUrl}complains/`,values, {
+           headers: {
+             Authorization: `Bearer ${token}`,
+           },
+         });
+         if(response){
+            Alert.alert("Success", "Complain submitted successfully!");
+         }
+         // setData(response.data.request);
+       } catch (error) {
+         console.error(error);
+         Alert.alert(
+           "Error",
+           error?.response?.data?.message || "Failed to submit Complain request."
+         );
+       }
    };
 
    const handleUploadImage = () => {

@@ -44,6 +44,20 @@ export const updateRoomRequest = async (req, res) => {
     res.status(500).json({ error: 'Server error: ' + error.message });
   }
 };
+export const updateRoomDetails = async (req, res) => {
+  try {
+    const { id, furnitureDetails } = req.body; // Status can be 'accepted' or 'rejected'
+
+    const request = await RoomRequest.findById(id);
+    if (!request) return res.status(404).json({ message: 'Request not found' });
+    if (furnitureDetails) request.furnitureDetails = furnitureDetails
+    await request.save();
+
+    res.status(200).json({ message: `Request updated successfully!`,request });
+  } catch (error) {
+    res.status(500).json({ error: 'Server error: ' + error.message });
+  }
+};
 
 // 🏠 Get all pending requests (for Admin)
 export const getPendingRequests = async (req, res) => {

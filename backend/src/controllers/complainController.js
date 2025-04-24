@@ -1,7 +1,7 @@
 import Complain from "../models/ComplainModal.js";
 
 export const createComplaint = async (req, res) => {
-  const { title, description } = req.body;
+  const { title, description,img} = req.body;
   const userId = req.user.id; // Extract from token using middleware
 
   if (!title || !description) {
@@ -11,6 +11,7 @@ export const createComplaint = async (req, res) => {
   try {
     const complain = new Complain({
       title,
+      image:img?img:"",
       description,
     });
 
