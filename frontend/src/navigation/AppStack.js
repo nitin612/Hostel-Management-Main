@@ -92,10 +92,10 @@ const AdminDrawer = () => {
                      <Button
                         icon={"logout"}
                         mode="text"
-                        buttonColor={lightGray}
-                        textColor={textDarkGray}
+                        buttonColor={orangeDark}
+                        textColor={white}
                         labelStyle={{ fontFamily: "fontMedium", fontSize: 16 }}
-                        style={{ borderRadius: 6 }}
+                        style={{ borderRadius: 30 }}
                         onPress={() => logout()}
                      >
                         Sign out
@@ -127,7 +127,7 @@ const AdminDrawer = () => {
                marginLeft: -20,
                fontFamily: "fontMedium",
             },
-            drawerActiveTintColor: primaryBlue,
+            drawerActiveTintColor: green,
             drawerInactiveTintColor: textDarkGray,
          }}
       >

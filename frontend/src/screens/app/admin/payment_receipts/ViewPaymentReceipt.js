@@ -39,7 +39,7 @@ const ViewPaymentReceipt = ({ navigation, route }) => {
                      {payment_receipt.description}
                   </Text>
                </View>
-               <Button
+               {/* <Button
                   style={styles.actionButton}
                   mode="contained"
                   labelStyle={{ fontFamily: "fontRegular", fontSize: 16 }}
@@ -54,7 +54,7 @@ const ViewPaymentReceipt = ({ navigation, route }) => {
                   buttonColor={darkRed}
                >
                   Decline Receipt
-               </Button>
+               </Button> */}
             </View>
          </View>
       </ScrollView>

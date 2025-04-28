@@ -49,7 +49,7 @@ const ViewLatePass = ({ navigation, route }) => {
                      {`${item.departure_date} @ ${item.departure_time}`}
                   </Text>
                </View>
-               <Button
+               {/* <Button
                   style={styles.actionButton}
                   mode="contained"
                   labelStyle={{ fontFamily: "fontRegular", fontSize: 16 }}
@@ -64,7 +64,7 @@ const ViewLatePass = ({ navigation, route }) => {
                   buttonColor={darkRed}
                >
                   Decline Request
-               </Button>
+               </Button> */}
             </View>
          </View>
       </ScrollView>
