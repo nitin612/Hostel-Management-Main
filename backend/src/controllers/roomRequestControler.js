@@ -3,29 +3,42 @@ import mongoose from "mongoose";
 
 //  Create a new room request
 export const createRoomRequest = async (req, res) => {
-    const { faculty, batch, members, reason } = req.body;
-    const userId = req.user.id; // Extract from token using middleware
-  
-    if (!faculty || !batch || !reason) {
-      return res.status(400).json({ message: "All fields are required." });
-    }
-  
-    try {
-      const roomRequest = new RoomRequest({
-        userId,
-        faculty,
-        batch,
-        members,
-        reason,
-        status: "pending",
+  const { faculty, batch, members, reason } = req.body;
+  const userId = req.user.id; // Extract from token using middleware
+
+  if (!faculty || !batch || !reason) {
+    return res.status(400).json({ message: "All fields are required." });
+  }
+
+  try {
+    // Check if user has a pending or accepted request
+    const existingRequest = await RoomRequest.findOne({
+      userId,
+      status: { $in: ["pending", "accepted"] },
+    });
+
+    if (existingRequest) {
+      return res.status(400).json({
+        message: `You already have a ${existingRequest.status} request.`,
       });
-  
-      await roomRequest.save();
-      res.status(201).json({ message: "Room request submitted successfully!" ,requestDetails:roomRequest});
-    } catch (error) {
-      res.status(500).json({ message: error.message });
     }
-  };
+
+    // If not, create a new request
+    const roomRequest = new RoomRequest({
+      userId,
+      faculty,
+      batch,
+      members,
+      reason,
+      status: "pending",
+    });
+
+    await roomRequest.save();
+    res.status(201).json({ message: "Room request submitted successfully!", requestDetails: roomRequest });
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
   
 // Admin approves/rejects the request
 export const updateRoomRequest = async (req, res) => {

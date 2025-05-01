@@ -171,7 +171,7 @@ const Login = ({ navigation }) => {
                           Remember me
                         </Text>
                       </View>
-                      <Button
+                      {/* <Button
                         mode="text"
                         textColor={primaryBlue}
                         labelStyle={{
@@ -185,7 +185,7 @@ const Login = ({ navigation }) => {
                         }}
                       >
                         Forgot password
-                      </Button>
+                      </Button> */}
                     </View>
                     <Button
                       mode="contained"

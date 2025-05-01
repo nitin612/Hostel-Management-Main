@@ -263,7 +263,7 @@ const Receipts = ({ navigation }) => {
             renderItem={renderReceiptItem}
             keyExtractor={(item) => item.id?.toString() || Math.random().toString()}
             contentContainerStyle={styles.listContent}
-            showsVerticalScrollIndicator={false}
+            showsVerticalScrollIndicator={false}x
             refreshControl={
               <RefreshControl
                 refreshing={refreshing}

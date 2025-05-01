@@ -79,6 +79,7 @@ const RoomChecklistForm = ({ navigation, route }) => {
                 </Text>
               </View>
             </View>
+            
           </Card.Content>
         </Card>
 

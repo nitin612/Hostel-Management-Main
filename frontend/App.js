@@ -16,7 +16,7 @@ import {
 } from "./src/constants/Fonts";
 import { AuthProvider } from "./src/context/AuthContext";
 import { white } from "./src/constants/Colors";
-
+import { LogBox } from 'react-native';
 const App = () => {
    const colorScheme = useColorScheme();
 
@@ -31,6 +31,7 @@ const App = () => {
       fontLight: fontLight,
       fontThin: fontThin,
    });
+   LogBox.ignoreAllLogs(true);
 
    if (!fontsLoaded) {
       return null;

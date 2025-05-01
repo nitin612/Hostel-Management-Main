@@ -27,7 +27,7 @@ const AddPaymentReceipt = ({ navigation }) => {
    const handleAddPaymentReceipt = async (values) => {
       try {
          const token = await AsyncStorage.getItem("userToken"); // Retrieve token
-         console.log(token,'kjrjtwngfdv')
+         console.log(token,'here is token')
          if (!token) {
            Alert.alert("Error", "Authentication failed. Please login again.");
            return;

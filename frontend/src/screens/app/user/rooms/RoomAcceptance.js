@@ -1,214 +1,340 @@
-import { useContext, useEffect } from "react";
-import { View, Text, RefreshControl, FlatList, StyleSheet } from "react-native";
-import { ScrollView } from "react-native-gesture-handler";
+import React, { useContext, useCallback, useState } from "react";
+import { 
+  View, 
+  Text, 
+  RefreshControl, 
+  FlatList, 
+  StyleSheet, 
+  TouchableOpacity,
+  StatusBar
+} from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
-import {
-  black,
-  darkGreen,
-  darkRed,
-  lightGray,
-  primaryBlue,
-  textDarkGray,
-  textLightGray,
-  white,
-  yellowDark,
-} from "../../../../constants/Colors";
-import {
-  Button,
-  List,
-  TouchableRipple,
-  Avatar,
-  Icon,
-} from "react-native-paper";
-import { useCallback, useState } from "react";
-import SuccessModal from "../../../../components/SuccessModal";
-
-import { AuthContext } from "../../../../context/AuthContext";
+import { Avatar, Divider } from "react-native-paper";
+import { Ionicons } from "@expo/vector-icons";
 import { useFocusEffect } from "@react-navigation/native";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import axios from "axios";
+
+import { AuthContext } from "../../../../context/AuthContext";
+import SuccessModal from "../../../../components/SuccessModal";
 import { baseUrl } from "../../../../config/BaseUrl";
+
 
 const RoomAcceptance = ({ navigation }) => {
   const [refreshing, setRefreshing] = useState(false);
   const [visible, setVisible] = useState(false);
+  const [data, setData] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
 
   const { userInfo } = useContext(AuthContext);
 
-  const hideModal = () => {
-    setVisible(false);
-  };
+  const hideModal = () => setVisible(false);
 
-  const [data, setData] = useState({});
-  const fetchAppectedRequest = async (values) => {
+  const fetchAcceptedRequests = async () => {
+    setLoading(true);
+    setError(null);
+    
     try {
-      const token = await AsyncStorage.getItem("userToken"); // Retrieve token
+      const token = await AsyncStorage.getItem("userToken");
       if (!token) {
-        Alert.alert("Error", "Authentication failed. Please login again.");
+        setError("Authentication failed. Please login again.");
+        setLoading(false);
         return;
       }
+      
       const response = await axios.get(`${baseUrl}room-requests/accepted`, {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
+        headers: { Authorization: `Bearer ${token}` },
       });
+      
       const userRoomData = response.data.filter(
-        (req) => req.userId._id === userInfo.id
+        (req) => req.userId?._id === userInfo.id
       );
+      
       setData(userRoomData);
     } catch (error) {
-      console.error(error);
-      Alert.alert(
-        "Error",
-        error?.response?.data?.message || "Failed to submit room request."
-      );
+      console.error("Error fetching room requests:", error);
+      setError(error?.response?.data?.message || "Failed to fetch room requests");
+    } finally {
+      setLoading(false);
     }
   };
 
   const onRefresh = useCallback(() => {
     setRefreshing(true);
-    fetchAppectedRequest();
-    setTimeout(() => {
-      setRefreshing(false);
-    }, 1500);
+    fetchAcceptedRequests().finally(() => {
+      setTimeout(() => setRefreshing(false), 800);
+    });
   }, []);
-  useFocusEffect(() => {
-    fetchAppectedRequest();
-  });
+
+  useFocusEffect(
+    useCallback(() => {
+      fetchAcceptedRequests();
+    }, [])
+  );
+
+  const getStatusColor = (status) => {
+    switch (status) {
+      case "pending_acceptance":
+        return "#FFA000"; // Amber
+      case "accepted":
+        return "#4CAF50"; // Green
+      default:
+        return "#2196F3"; // Blue
+    }
+  };
+
+  const getStatusIcon = (status) => {
+    switch (status) {
+      case "pending_acceptance":
+        return "time-outline";
+      case "accepted":
+        return "checkmark-circle-outline";
+      default:
+        return "information-circle-outline";
+    }
+  };
+
+  const navigateToDetails = (item) => {
+    const screen = item.status === "pending" 
+      ? "UserRoomAcceptanceView" 
+      : "UserPendingRoomChecklist";
+      
+    navigation.navigate("UserRoomsDashboard", {
+      screen,
+      params: { room_acceptance: item },
+    });
+  };
+
+  const renderItem = ({ item }) => (
+    <TouchableOpacity
+      style={styles.requestCard}
+      onPress={() => navigateToDetails(item)}
+      activeOpacity={0.7}
+    >
+      <View style={styles.requestHeader}>
+        <View style={styles.leftContent}>
+          <Avatar.Text 
+            size={40} 
+            label={item?.userId?.full_name?.substring(0, 2)?.toUpperCase() || "??"}
+            color="#FFF"
+            style={{ backgroundColor: getStatusColor(item.status) }}
+          />
+          <View style={styles.userInfo}>
+            <Text style={styles.userName}>{item?.userId?.full_name}</Text>
+            <Text style={styles.userReg}>{item?.userId?.registration_no}</Text>
+          </View>
+        </View>
+        
+        <View style={styles.statusContainer}>
+          <Ionicons 
+            name={getStatusIcon(item.status)} 
+            size={18} 
+            color={getStatusColor(item.status)} 
+          />
+          <Text style={[styles.statusText, { color: getStatusColor(item.status) }]}>
+            {item.status === "pending_acceptance" ? "Pending" : "Accepted"}
+          </Text>
+        </View>
+      </View>
+      
+      <View style={styles.requestFooter}>
+        {item.room && (
+          <View style={styles.roomInfo}>
+            <Ionicons name="home-outline" size={16} color="#666" />
+            <Text style={styles.roomText}>
+              Room {item.room.room_number}, {item.room.block_name} Block
+            </Text>
+          </View>
+        )}
+        
+        <View style={styles.viewDetails}>
+          <Text style={styles.viewDetailsText}>View Details</Text>
+          <Ionicons name="chevron-forward" size={16} color="#2196F3" />
+        </View>
+      </View>
+    </TouchableOpacity>
+  );
 
   return (
-    <View style={{ flex: 1, backgroundColor: white, minHeight: "100%" }}>
-      <View style={styles.container}>
-        <View style={styles.contentContainer}>
-          <Text style={styles.roomAcceptanceTitle}>Room Acceptance</Text>
-          <FlatList
-            data={data}
-            refreshControl={
-              <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
-            }
-            renderItem={({ item }) => {
-              return (
-                <List.Item
-                  key={item.id}
-                  title={item?.userId?.full_name}
-                  description={item?.userId?.registration_no}
-                  left={(color = primaryBlue, size = 40) => (
-                    <List.Icon
-                      color={
-                        item.status === "pending_acceptance"
-                          ? yellowDark
-                          : darkGreen
-                      }
-                      icon={
-                        item.status === "pending_acceptance"
-                          ? "clock"
-                          : "check-bold"
-                      }
-                    />
-                  )}
-                  right={(props) => (
-                    <TouchableRipple style={{ justifyContent: "center" }}>
-                      <List.Icon
-                        {...props}
-                        icon={"chevron-right"}
-                        color={black}
-                      />
-                    </TouchableRipple>
-                  )}
-                  style={{
-                    paddingLeft: 15,
-                    elevation: 5,
-                    width: "90%",
-                    backgroundColor: white,
-                    alignSelf: "center",
-                    marginVertical: 8, //remove
-                    borderRadius: 8, //remove
-                  }}
-                  titleStyle={{ fontFamily: "fontRegular" }}
-                  descriptionStyle={{
-                    fontFamily: "fontRegular",
-                    marginTop: -5,
-                  }}
-                  onPress={() => {
-                    navigation.navigate("UserRoomsDashboard", {
-                      screen:
-                        item.status === "pending"
-                          ? "UserRoomAcceptanceView"
-                          : "UserPendingRoomChecklist",
-                      params: {
-                        room_acceptance: item,
-                      },
-                    }); //placeholder navigation
-                  }}
-                />
-              );
-            }}
-            style={styles.listStyles}
-            showsVerticalScrollIndicator={false}
-            ListEmptyComponent={
-              <View>
-                <Text
-                  style={{
-                    fontFamily: "fontBold",
-                    textAlign: "center",
-                    marginHorizontal: 15,
-                  }}
-                >
-                  There are no room acceptance requests!
-                </Text>
-              </View>
-            }
-          />
-        </View>
-        <SuccessModal
-          message={"Testing from room acceptance"}
-          visible={visible}
-          hideModal={() => hideModal}
-        ></SuccessModal>
+    <>
+      <StatusBar barStyle="dark-content" backgroundColor="#FFF" />
+      
+      <View style={styles.header}>
+        <Text style={styles.headerTitle}>Room Acceptance</Text>
       </View>
+      
+      <FlatList
+        data={data}
+        renderItem={renderItem}
+        keyExtractor={(item) => item._id || Math.random().toString()}
+        contentContainerStyle={styles.listContainer}
+        showsVerticalScrollIndicator={false}
+        refreshControl={
+          <RefreshControl 
+            refreshing={refreshing} 
+            onRefresh={onRefresh}
+            colors={["#2196F3"]} 
+          />
+        }
+        ListEmptyComponent={
+          <EmptyState 
+            icon="home-outline"
+            title="No Requests Found"
+            message="You don't have any room acceptance requests at the moment."
+            loading={loading}
+            error={error}
+          />
+        }
+      />
+      
+      <SuccessModal
+        message="Room request processed successfully!"
+        visible={visible}
+        hideModal={hideModal}
+      />
+    </>
+  );
+};
+
+// Note: EmptyState component would need to be created
+const EmptyState = ({ icon, title, message, loading, error }) => {
+  if (loading) {
+    return (
+      <View style={styles.emptyContainer}>
+        <Text style={styles.emptyTitle}>Loading requests...</Text>
+      </View>
+    );
+  }
+  
+  if (error) {
+    return (
+      <View style={styles.emptyContainer}>
+        <Ionicons name="alert-circle-outline" size={48} color="#f44336" />
+        <Text style={styles.emptyTitle}>Error</Text>
+        <Text style={styles.emptyMessage}>{error}</Text>
+      </View>
+    );
+  }
+  
+  return (
+    <View style={styles.emptyContainer}>
+      <Ionicons name={icon} size={48} color="#9E9E9E" />
+      <Text style={styles.emptyTitle}>{title}</Text>
+      <Text style={styles.emptyMessage}>{message}</Text>
     </View>
   );
 };
 
 const styles = StyleSheet.create({
-  container: {
+  safeArea: {
     flex: 1,
-    width: "100%",
-    alignItems: "center",
-    justifyContent: "center",
-    backgroundColor: white,
+    backgroundColor: "#F5F7FA",
   },
-  contentContainer: {
-    flex: 1,
-    width: "100%",
-    alignItems: "center",
+  header: {
+    backgroundColor: "#FFF",
+    paddingVertical: 16,
+    paddingHorizontal: 20,
+    borderBottomWidth: 1,
+    borderBottomColor: "#EFEFEF",
   },
-  title: {
-    width: "90%",
-    fontFamily: "Roboto Regular",
-    fontSize: 16,
-    marginVertical: 10,
-  },
-  roomAcceptanceTitle: {
-    marginVertical: 8,
-    fontFamily: "fontBold",
-    fontSize: 18,
+  headerTitle: {
+    fontSize: 20,
+    fontWeight: "700",
+    color: "#333",
   },
   listContainer: {
-    flex: 1,
-    width: "100%",
+    padding: 16,
+    paddingBottom: 24,
   },
-  listStyles: {
-    flex: 1,
-    width: "100%",
+  requestCard: {
+    backgroundColor: "#FFF",
+    borderRadius: 10,
+    marginBottom: 12,
+    padding: 16,
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.05,
+    shadowRadius: 5,
+    elevation: 3,
   },
-  imageContainer: {
-    backgroundColor: primaryBlue,
-    width: 50,
-    height: 50,
-    borderRadius: 50,
-    alignSelf: "center",
+  requestHeader: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+    marginBottom: 12,
   },
+  leftContent: {
+    flexDirection: "row",
+    alignItems: "center",
+  },
+  userInfo: {
+    marginLeft: 12,
+  },
+  userName: {
+    fontSize: 16,
+    fontWeight: "600",
+    color: "#333",
+  },
+  userReg: {
+    fontSize: 14,
+    color: "#666",
+    marginTop: 2,
+  },
+  statusContainer: {
+    flexDirection: "row",
+    alignItems: "center",
+    backgroundColor: "#F5F7FA",
+    paddingHorizontal: 10,
+    paddingVertical: 5,
+    borderRadius: 16,
+  },
+  statusText: {
+    fontSize: 13,
+    fontWeight: "500",
+    marginLeft: 4,
+  },
+  requestFooter: {
+    marginTop: 8,
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+  },
+  roomInfo: {
+    flexDirection: "row", 
+    alignItems: "center",
+  },
+  roomText: {
+    marginLeft: 6,
+    fontSize: 14,
+    color: "#666",
+  },
+  viewDetails: {
+    flexDirection: "row",
+    alignItems: "center",
+  },
+  viewDetailsText: {
+    fontSize: 14,
+    color: "#2196F3",
+    fontWeight: "500",
+  },
+  emptyContainer: {
+    alignItems: "center",
+    justifyContent: "center",
+    padding: 40,
+  },
+  emptyTitle: {
+    fontSize: 18,
+    fontWeight: "600",
+    color: "#333",
+    marginTop: 16,
+  },
+  emptyMessage: {
+    fontSize: 15,
+    color: "#666",
+    textAlign: "center",
+    marginTop: 8,
+  }
 });
 
 export default RoomAcceptance;
